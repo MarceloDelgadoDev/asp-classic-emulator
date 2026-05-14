@@ -1,0 +1,33 @@
+{
+  "name": "asp-emulator",
+  "version": "0.1.0",
+  "description": "ASP Classic Emulator — executa ASP Classic (VBScript) em Node.js",
+  "type": "module",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "bin": {
+    "asp-emulator": "bin/asp-emulator.js"
+  },
+  "files": ["dist", "bin"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/index.ts",
+    "start": "node bin/asp-emulator.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": ["asp", "classic", "vbscript", "emulator", "iis"],
+  "license": "MIT",
+  "dependencies": {
+    "chevrotain": "^11.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.6"
+  }
+}

@@ -1,14 +1,14 @@
 {
   "name": "asp-classic-emulator",
   "version": "0.1.0",
-  "description": "ASP Classic Emulator — executa ASP Classic (VBScript) em Node.js",
+  "description": "Run ASP Classic (VBScript) on macOS, Linux and BSD — no Windows, no IIS, no VM.",
   "type": "module",
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
   "bin": {
     "asp-classic-emulator": "bin/asp-classic-emulator.js"
   },
-  "files": ["dist", "bin"],
+  "files": ["dist", "bin", "README.md", "LICENSE"],
   "engines": {
     "node": ">=18"
   },
@@ -19,8 +19,16 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
-  "keywords": ["asp", "classic", "vbscript", "emulator", "iis"],
+  "keywords": ["asp", "asp-classic", "vbscript", "emulator", "iis", "legacy", "windows", "server"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MarceloDelgadoDev/asp-classic-emulator"
+  },
+  "homepage": "https://github.com/MarceloDelgadoDev/asp-classic-emulator#readme",
+  "bugs": {
+    "url": "https://github.com/MarceloDelgadoDev/asp-classic-emulator/issues"
+  },
   "dependencies": {
     "chevrotain": "^11.0.3"
   },

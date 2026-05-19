@@ -35,7 +35,7 @@ export function formatDevErrorPage(opts: {
     }
   }
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>ASP Emulator — erro</title>
+<html><head><meta charset="utf-8"><title>ASP Classic Emulator — erro</title>
 <style>body{font-family:system-ui,sans-serif;margin:2rem;background:#1a1a2e;color:#eee}pre{background:#0f0f1a;padding:1rem;overflow:auto;border-radius:8px}h1{color:#f88}</style>
 </head><body>
 <h1>${escapeHtml(name)}</h1>

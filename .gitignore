@@ -23,8 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Config local do emulador (opcional: sobrescrever asp-emulator.config.json)
-asp-emulator.config.local.json
+# Config local do emulador (opcional: sobrescrever asp-classic-emulator.config.json)
+asp-classic-emulator.config.local.json
 
 # SO
 .DS_Store

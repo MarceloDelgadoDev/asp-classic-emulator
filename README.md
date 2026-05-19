@@ -10,10 +10,12 @@ No Windows. No IIS. No VM.
 npx asp-classic-emulator
 ```
 
-![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20BSD-lightgrey)
+[![npm version](https://img.shields.io/npm/v/asp-classic-emulator)](https://www.npmjs.com/package/asp-classic-emulator)
+[![npm downloads](https://img.shields.io/npm/dm/asp-classic-emulator)](https://www.npmjs.com/package/asp-classic-emulator)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Status](https://img.shields.io/badge/status-alpha-orange)]()
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20BSD-lightgrey)]()
 
 </div>
 
@@ -23,15 +25,14 @@ npx asp-classic-emulator
 
 ASP Classic never died — it just got stranded on Windows. Millions of lines of VBScript are still running in production, and maintaining them means either keeping a Windows Server around or setting up a VM every time someone needs to touch the code.
 
-**asp-classic-emulator** fixes that. Drop it into any folder with `.asp` files, run one command, and get a fully working HTTP server that interprets VBScript with high fidelity to the original IIS behavior — on any POSIX system.
+**asp-classic-emulator** fixes that. Drop it into any folder with `.asp` files, run one command, and get a fully working HTTP server that interprets VBScript — on any POSIX system.
 
 ```
 your-project/
 ├── index.asp
 ├── login.asp
-├── includes/
-│   └── conn.asp
-└── global.asa
+└── includes/
+    └── conn.asp
 ```
 
 ```bash
@@ -40,23 +41,7 @@ npx asp-classic-emulator
 # → Serving on http://localhost:3000
 ```
 
----
-
-## Features
-
-- **Zero config** — works out of the box with a single command
-- **High-fidelity VBScript** — hand-written Chevrotain parser, proper Variant type system, implicit coercion with terminal warnings
-- **Full ASP object model** — `Response`, `Request`, `Session`, `Application`, `Server`
-- **Database support** — SQLite (built-in, zero config), MySQL/MariaDB, PostgreSQL
-- **ADO emulation** — `ADODB.Connection`, `ADODB.Recordset` with classic connection strings
-- **`CreateObject` support** — `ADODB.*`, `Scripting.FileSystemObject`, `MSXML2.DOMDocument`
-- **`#include`** — `file` and `virtual`, resolved at runtime with cache and circular reference detection
-- **`global.asa`** — `Application_OnStart`, `Session_OnStart` events
-- **Two error modes** — modern stack trace in dev, classic IIS-style error page in prod
-- **Static file serving** — CSS, JS, images served automatically alongside `.asp` files
-- **Watch mode** — auto-reloads on file changes in development
-- **`--strict` mode** — turns implicit type coercions into hard errors
-- **Multiple distribution options** — npx, global install, Node.js API, Docker
+> **Note:** This project is in active development. See the [Implemented](#implemented-v010) and [Planned](#planned) sections below for an accurate picture of what works today.
 
 ---
 
@@ -80,7 +65,7 @@ npm install -g asp-classic-emulator
 asp-classic-emulator
 ```
 
-### Use as a Node.js library
+### Install as a project dependency
 
 ```bash
 npm install asp-classic-emulator
@@ -98,30 +83,63 @@ const server = createServer({
 await server.start()
 ```
 
-### Docker
-
-```bash
-docker run -p 3000:3000 -v $(pwd)/www:/app/www ghcr.io/asp-classic-emulator/asp-classic-emulator
-```
-
 ---
 
-## Usage
+## Implemented (v0.1.0)
 
-```
-asp-classic-emulator [options]
+### HTTP server
 
-Options:
-  --port        Port to listen on                  [default: 3000]
-  --root        Root folder with .asp files        [default: .]
-  --mode        dev or prod                        [default: dev]
-  --strict      Throw on implicit type coercions   [default: false]
-  --watch       Reload on file changes             [default: true in dev]
-  --timeout     Script execution timeout (seconds) [default: 90]
-  --log-level   silent | error | warn | info | debug  [default: info]
-  --config      Path to config file                [default: asp-classic-emulator.config.json]
-  --help        Show help
-```
+- Serves `.asp` files through the VBScript interpreter
+- Serves static files (`.css`, `.js`, `.png`, `.jpg`, `.gif`, `.svg`, `.ico`) with correct `Content-Type`
+- Parses `QueryString` and `Form` (URL-encoded and multipart)
+- Request log: `GET /index.asp 200 11ms`
+- Dev error page — file name, line, column, source excerpt, stack trace
+- Prod error page — classic IIS-style (`Microsoft VBScript runtime error '800a000d'`)
+
+### VBScript — Phase 1
+
+| Construct | Status |
+|---|---|
+| `Dim`, `Set` | ✅ |
+| Variable assignment | ✅ |
+| `If` / `ElseIf` / `Else` / `End If` | ✅ |
+| `For` / `Next` | ✅ |
+| `For Each` / `Next` | ✅ |
+| `While` / `Wend` | ✅ |
+| `Do` / `Loop` | ✅ |
+| `Sub` / `End Sub` | ✅ |
+| `Function` / `End Function` (basic) | ✅ |
+| Fixed arrays — `Dim a(10)` | ✅ |
+| Expressions (arithmetic, logical, comparison, string `&`) | ✅ |
+
+### ASP objects
+
+| Object | Implemented members |
+|---|---|
+| `Response` | `Write`, `End`, `Clear`, `ContentType`, `Charset` |
+| `Request` | `QueryString("key")`, `Form("key")` |
+
+### Type system
+
+- Full `Variant` type with subtypes: `Empty`, `Null`, `Boolean`, `Integer`, `Long`, `Double`, `String`, `Object`
+- Implicit coercion works as in IIS — warning printed to terminal
+- `--strict` flag turns coercions into runtime errors
+
+### `#include`
+
+- `<!--#include file="..." -->` and `<!--#include virtual="..." -->`
+- Circular reference detection (throws with full cycle path)
+
+### CLI flags (wired)
+
+| Flag | Default | Description |
+|---|---|---|
+| `--port` | `3000` | Port to listen on |
+| `--root` | `.` | Root folder with `.asp` files |
+| `--mode` | `dev` | `dev` or `prod` |
+| `--strict` | `false` | Throw on implicit type coercions |
+| `--log-level` | `info` | `silent` \| `error` \| `warn` \| `info` \| `debug` |
+| `--config` | `asp-classic-emulator.config.json` | Path to config file |
 
 ### Config file
 
@@ -133,42 +151,25 @@ Create `asp-classic-emulator.config.json` in your project root. CLI flags overri
   "root": "./www",
   "mode": "dev",
   "strict": false,
-  "watch": true,
-  "timeout": 90,
-  "session": {
-    "timeout": 20
-  },
-  "databases": {
-    "default": "Provider=SQLite;Data Source=./db.sqlite"
-  },
-  "virtualDirectories": {
-    "/includes": "./shared/includes"
-  }
+  "logLevel": "info"
 }
 ```
 
 ---
 
-## VBScript support
+## Planned
 
-### Phase 1 (current)
+The following features are on the roadmap but **not yet implemented**.
+
+### VBScript — Phase 1 (remaining)
 
 | Construct | Status |
 |---|---|
-| `Dim`, `ReDim`, `Set` | ✅ |
-| Variable assignment | ✅ |
-| `If` / `ElseIf` / `Else` / `End If` | ✅ |
-| `For` / `Next` | ✅ |
-| `For Each` / `Next` | ✅ |
-| `While` / `Wend` | ✅ |
-| `Do` / `Loop` | ✅ |
-| `Sub` / `End Sub` | ✅ |
-| `Function` / `End Function` | ✅ |
-| Fixed and dynamic arrays | ✅ |
-| Expressions (arithmetic, logical, comparison, string) | ✅ |
-| `Exit For`, `Exit Do`, `Exit Sub`, `Exit Function` | ✅ |
+| `ReDim` / dynamic arrays | 🔜 |
+| `Exit For`, `Exit Do`, `Exit Sub`, `Exit Function` | 🔜 |
+| `Function` return value | 🔜 |
 
-### Phase 2 (planned)
+### VBScript — Phase 2
 
 | Construct | Status |
 |---|---|
@@ -177,7 +178,38 @@ Create `asp-classic-emulator.config.json` in your project root. CLI flags overri
 | `With` / `End With` | 🔜 |
 | `Class` / `End Class` | 🔜 |
 | `Execute` / `ExecuteGlobal` | 🔜 |
-| Full VBScript built-in functions | 🔜 |
+| Full VBScript built-in functions (`Split`, `Replace`, `Mid`, `DateAdd`, ...) | 🔜 |
+
+### ASP objects (remaining)
+
+| Object / member | Status |
+|---|---|
+| `Response.Redirect`, `Response.Cookies`, `Response.Headers` | 🔜 |
+| `Request.Cookies`, `Request.ServerVariables`, `Request.BinaryRead` | 🔜 |
+| `Session` (Contents, Abandon, Timeout, SessionID) | 🔜 |
+| `Application` (Contents, Lock, Unlock) | 🔜 |
+| `Server` (CreateObject, MapPath, URLEncode, HTMLEncode) | 🔜 |
+
+### Database support
+
+| Feature | Status |
+|---|---|
+| `ADODB.Connection` + `ADODB.Recordset` | 🔜 |
+| SQLite (built-in, zero config) | 🔜 |
+| MySQL / MariaDB | 🔜 |
+| PostgreSQL | 🔜 |
+
+### Other
+
+| Feature | Status |
+|---|---|
+| `global.asa` (`Application_OnStart`, `Session_OnStart`) | 🔜 |
+| `.html` / `.htm` with embedded ASP blocks | 🔜 |
+| `#include` cache (invalidated on file change) | 🔜 |
+| Watch mode (auto-reload on file change) | 🔜 |
+| `--watch` / `--timeout` wired to runtime | 🔜 |
+| `--help` flag | 🔜 |
+| Config keys: `session`, `databases`, `virtualDirectories` | 🔜 |
 
 ---
 
@@ -187,11 +219,11 @@ VBScript's `Variant` type is fully emulated. Every variable can hold any subtype
 
 ```vbscript
 Dim x
-x = 42           ' Long
-x = "hello"      ' String
-x = True         ' Boolean
-x = Null         ' Null (contagious in expressions)
-x = Empty        ' Empty (zero in numeric context)
+x = 42      ' Long
+x = "hello" ' String
+x = True    ' Boolean
+x = Null    ' Null (contagious in expressions)
+x = Empty   ' Empty (zero in numeric context)
 ```
 
 ### Implicit coercion
@@ -211,89 +243,6 @@ asp-classic-emulator --strict
 
 ---
 
-## Database support
-
-Connection strings use classic ADO syntax — no changes needed to existing code.
-
-```vbscript
-Dim conn
-Set conn = Server.CreateObject("ADODB.Connection")
-
-' SQLite
-conn.Open "Provider=SQLite;Data Source=" & Server.MapPath("./db.sqlite")
-
-' MySQL
-conn.Open "Provider=MySQL;Data Source=localhost;Database=mydb;User Id=root;Password=secret"
-
-' PostgreSQL
-conn.Open "Provider=PostgreSQL;Data Source=localhost;Database=mydb;User Id=postgres;Password=secret"
-
-Dim rs
-Set rs = conn.Execute("SELECT * FROM users WHERE active = 1")
-
-Do While Not rs.EOF
-  Response.Write rs("name") & "<br>"
-  rs.MoveNext
-Loop
-
-rs.Close
-conn.Close
-```
-
----
-
-## Error pages
-
-### Development mode
-
-Clear, modern error page with file name, line number, column, source excerpt, and full interpreter stack trace.
-
-### Production mode (`--mode=prod`)
-
-Classic IIS-style error page — exactly what end users would see on a real Windows server:
-
-```
-Microsoft VBScript runtime error '800a000d'
-Type mismatch
-/pagina.asp, line 42
-```
-
----
-
-## Supported file types
-
-| Extension | Behavior |
-|---|---|
-| `.asp` | Interpreted — `<% %>` blocks executed |
-| `.asa` | `global.asa` events (`Application_OnStart`, etc.) |
-| `.inc` | Interpreted when included via `#include` |
-| `.html`, `.htm` | Interpreted (supports embedded ASP blocks) |
-| `.css`, `.js`, `.png`, `.jpg`, `.gif`, `.svg`, `.ico` | Served as static files |
-| Other | Served as `application/octet-stream` |
-
----
-
-## Terminal output
-
-```
-┌─────────────────────────────────────────┐
-│  ASP Emulator v0.1.0                    │
-│  Serving: ./www                         │
-│  http://localhost:3000                  │
-│  Mode: development · Watch: on          │
-└─────────────────────────────────────────┘
-
-GET  /index.asp        200  11ms
-GET  /css/style.css    200   2ms
-POST /login.asp        302   6ms
-GET  /dashboard.asp    200  28ms
-[WARN] implicit coercion in /dashboard.asp:42 — String → Number
-GET  /report.asp       500   4ms
-[ERROR] /report.asp:17 — Object required: 'rs'
-```
-
----
-
 ## Architecture
 
 ```
@@ -303,7 +252,7 @@ HTTP Request
 HTTP Server (node:http)
      │
      ▼
-Request Parser  ──  QueryString, Form, Cookies, Headers
+Request Parser  ──  QueryString, Form, Headers
      │
      ▼
 ASP Pre-processor  ──  resolve #include, split HTML / <% %>
@@ -341,15 +290,16 @@ No usable VBScript parser exists in the Node.js ecosystem. The few packages that
 Contributions are welcome, especially:
 
 - VBScript built-in functions (`Split`, `Join`, `Replace`, `Mid`, `DateAdd`, etc.)
-- Additional `CreateObject` implementations
+- `ReDim`, `Exit`, and `Function` return value (Phase 1 remaining items)
+- Additional `Response` and `Request` members
 - Real-world ASP fixture files for the test suite (anonymized is fine)
-- Bug reports with `.asp` snippets that don't behave like IIS
+- Bug reports with `.asp` snippets that don't behave as expected
 
 ```bash
-git clone https://github.com/your-org/asp-classic-emulator
+git clone https://github.com/MarceloDelgadoDev/asp-classic-emulator
 cd asp-classic-emulator
 npm install
-npm run dev   # starts the emulator pointing to ./examples/hello-world
+npm run dev
 npm test
 ```
 

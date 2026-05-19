@@ -53,7 +53,7 @@ function warnCoerce(ctx: CoerceContext, msg: string): void {
     throw new TypeError(`Coerção implícita rejeitada (--strict) em ${loc} — ${msg}`);
   }
   ctx.logger.warn(
-    `[WARN] asp-emulator: coerção implícita em ${loc}\n       ${msg}\n       Para lançar erro, use a flag --strict.`
+    `[WARN] asp-classic-emulator: coerção implícita em ${loc}\n       ${msg}\n       Para lançar erro, use a flag --strict.`
   );
 }
 

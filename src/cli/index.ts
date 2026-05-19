@@ -21,7 +21,7 @@ async function main(): Promise<void> {
 
   const box = [
     "┌─────────────────────────────────────────┐",
-    "│  ASP Emulator v0.1.0                    │",
+    "│  ASP Classic Emulator v0.1.0            │",
     `│  Servindo: ${resolve(cfg.root).padEnd(27).slice(0, 27)}│`,
     `│  http://localhost:${String(cfg.port).padEnd(17)}│`,
     `│  Modo: ${cfg.mode.padEnd(10)} · Watch: ${(cfg.watch ? "ativo" : "off").padEnd(8)}│`,

@@ -38,7 +38,7 @@ export function loadConfig(argv: string[]): ResolvedEmulatorConfig {
   let file: EmulatorConfigFile = {};
   let loadedPath: string | null = null;
   const configPathArg = parseArg(argv, "config");
-  const defaultPath = resolve(process.cwd(), "asp-emulator.config.json");
+  const defaultPath = resolve(process.cwd(), "asp-classic-emulator.config.json");
   const tryPath = configPathArg ? resolve(configPathArg) : defaultPath;
   try {
     const raw = readFileSync(tryPath, "utf8");

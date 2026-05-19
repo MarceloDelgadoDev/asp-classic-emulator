@@ -9,7 +9,7 @@ const distCli = join(__dirname, "..", "dist", "cli", "index.js");
 
 if (!existsSync(distCli)) {
   console.error(
-    "asp-emulator: execute `npm run build` antes de usar o binário, ou use `npm run dev --`."
+    "asp-classic-emulator: execute `npm run build` antes de usar o binário, ou use `npm run dev --`."
   );
   process.exit(1);
 }
